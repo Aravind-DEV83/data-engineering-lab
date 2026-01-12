@@ -82,3 +82,42 @@ Each column chunk contains pages, these pages actually holds the data.
 **Pros:** Smallest file size, excellent for analytical queries, efficient compression\
 **Cons:** Slower writes, overkill for small datasets\
 **Best for:** Data warehouses, analytics, OLAP workloads, big data processing
+
+
+
+
+### Columar Pruning (Parquet)
+
+When querying only a subset of columns:
+- CSV and Avro read the entire dataset
+- Parquet reads only the required columns
+
+Spark Physical Plan showed for Parquet:
+    ReadSchema: struct<id:bigint>
+
+
+This is possible because Parquet stores data column-wise, allowing query engines to physically skip unused columns and reduce IO.
+
+##### Observation
+
+Parquet and Avro looks similar in the query plan, but works differently at the storage level. The ReadSchema looks identical for both query plans as you saw in the notebook, but they mean different things internally.
+
+1. Avro supports column projection but not column pruning.
+2. Avro still reads and decodes full rows from disk. Unused columns are discarded only after decoding.
+
+Note: 
+    `ReadSchema tells you which columns spark will materialized into spark rows. It won't tell you how many bytes it read from disk. So Avro still reads full rows, decode the fields, only return the "id" to Spark.`
+
+Conclusion: 
+    `Parquet physically skips unused columns at disk level, which significantly reduces IO and improves performance.`
+
+
+### Schema Evolution: Parquet and Avro
+
+#### Avro
+Avro natively supports schema evolution by embedding the schema with each file. When a producer adds a new column, older records that lack the field are automatically populated with default or null values at read time. No special configuration is required.
+
+
+
+#### Parquet
+Parquet does not support schema evolution natively. Schema evolution is handled by the query engine (Spark) by merging schemas across multiple files at read time. Additive schema changes work only when schema merging is enabled.
