@@ -1,5 +1,9 @@
 ## Why data format decisions define cost, performance, and scalability
 
+1. Storage size comparison
+2. Read performance & columnar pruning
+3. Schema evolution 
+
 We wrote the same 1M rows dataset in CSV, Parquert & Avro
 
 Results:
@@ -112,7 +116,29 @@ Conclusion:
     `Parquet physically skips unused columns at disk level, which significantly reduces IO and improves performance.`
 
 
-### Schema Evolution: Parquet and Avro
+### Compression vs Encoding
+
+Encoding goes first and compression later
+
+We'll distinguish why parquet is smaller. Because parquet stores data by column, it will use some encoding techniques internally. It's all about searching for patterns in data.
+
+1. Ditcionary Length encoding: If a column has repetitive values (ex: City), Parquet creats a list like 
+    `1: Mumbai, 2: Delhi`. Instead of writing mumbai 10,000 times.
+
+2. Run Length encoding: If we have 100 rows of status column "Active" in a row. Parquet stores it as `Active: 100` instead of writing the word 100 times.
+
+Avro is a binary format, it's encooding is all about efficiency.
+It uses Binary serializer. Ex: Instead of writing "Aravind" which is human readable. It will write it as raw binary bytes.
+It doesn't use field names for every row. It puts the schema at the top of the file.
+
+Compression that runs after the data is encoded. It doesn't care about what data it is, it looks for repeating binary patterns and squash them.
+
+1. Snappy: The `Default` for most bigdata. It is extremely fast when we want to read / write the data quickly and it doesn't offer the smallest file.
+
+2. GZIP / Deflate: It give high compression (very small files), but it will use more cpu and read / write is slow.
+
+
+### Schema Evolution
 
 #### Avro
 Avro natively supports schema evolution by embedding the schema with each file. When a producer adds a new column, older records that lack the field are automatically populated with default or null values at read time. No special configuration is required.
@@ -121,3 +147,11 @@ Avro natively supports schema evolution by embedding the schema with each file. 
 
 #### Parquet
 Parquet does not support schema evolution natively. Schema evolution is handled by the query engine (Spark) by merging schemas across multiple files at read time. Additive schema changes work only when schema merging is enabled.
+
+
+
+### Summary
+
+Choose Parquet: If you are building a Data Warehouse or Data Lake for analytics. Its columnar compression will save you roughly 20–50% more space than Avro.
+
+Choose Avro: If you are Streaming the data. It is much faster to compress data row-by-row as it arrives. or if your data structure changes often (Schema Evolution)
