@@ -34,3 +34,4 @@ To execute a single complex query (1Tb scan with Regex). BQ dyamically assesmble
 ### Useful Resources
 - [BigQuery Under the Hood](https://cloud.google.com/blog/products/bigquery/bigquery-under-the-hood)
 - [Anatomy of BigQuery Query](https://cloud.google.com/blog/products/bigquery/anatomy-of-a-bigquery-query)
+- [Inside BQ Storage](https://cloud.google.com/blog/products/bigquery/inside-capacitor-bigquerys-next-generation-columnar-storage-format)

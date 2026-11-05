@@ -1,3 +1,47 @@
+
+# Python bytecode and test/type-checker caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments and installed dependencies
+.venv/
+venv/
+venvs/
+.venvs/
+env/
+ENV/
+site-packages/
+node_modules/
+
+# Notebook-generated files
+.ipynb_checkpoints/
+
+# Local secrets and credentials
+.env
+.env.*
+!.env.example
+!.env.sample
+secrets/
+*credentials*.json
+*service-account*.json
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Generated build output and logs
+build/
+dist/
+*.egg-info/
+*.log
+
+# macOS metadata
+.DS_Store
 /data-formats/file-formats/tmp/
 
 **/tmp/
+.vscode/
